@@ -5,8 +5,9 @@ async function loadCadetAchievements(container) {
   container.innerHTML = '<div class="text-center p-8" style="color:var(--text-blue-200)">Loading achievements...</div>';
 
   try {
-    const data = await api.get('/achievements/my');
-    const achievements = data.achievements || data;
+    const cadet = JSON.parse(localStorage.getItem('ncc_cadet') || '{}');
+    const data = await api.get(`/achievements/cadet/${cadet._id}`);
+    const achievements = Array.isArray(data) ? data : (data.achievements || []);
 
     const categoryColors = {
       'Best Cadet': 'yellow', 'Firing': 'red', 'Drill': 'blue',

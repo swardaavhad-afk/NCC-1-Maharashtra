@@ -6,7 +6,10 @@ async function loadCadetDashboard(container) {
 
   try {
     const data = await api.get('/dashboard/cadet');
-    const { cadetInfo, attendanceStats, upcomingCamps, achievements } = data;
+    const cadetInfo = data.cadet || {};
+    const attendanceStats = { present: data.stats?.presentCount || 0, percentage: data.stats?.attendancePercentage || 0 };
+    const upcomingCamps = data.upcomingCamps || [];
+    const achievements = data.myAchievements || [];
 
     container.innerHTML = `
       <div class="fade-in">

@@ -67,7 +67,7 @@ function filterCadetMaterials(category, btn) {
 
 async function trackDownload(materialId) {
   try {
-    await api.put(`/study-materials/${materialId}/download`);
+    await api.post(`/study-materials/${materialId}/download`);
   } catch (e) {
     // Silent fail for download tracking
   }

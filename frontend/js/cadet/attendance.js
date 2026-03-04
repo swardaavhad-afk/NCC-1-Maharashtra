@@ -5,12 +5,22 @@ async function loadCadetAttendance(container) {
   container.innerHTML = '<div class="text-center p-8" style="color:var(--text-blue-200)">Loading attendance...</div>';
 
   try {
-    const [historyData, statsData] = await Promise.all([
-      api.get('/attendance/my'),
-      api.get('/attendance/my-stats')
-    ]);
-    const records = historyData.records || historyData;
-    const stats = statsData;
+    const user = JSON.parse(localStorage.getItem('ncc_user') || '{}');
+    const cadet = JSON.parse(localStorage.getItem('ncc_cadet') || '{}');
+    const cadetId = cadet._id;
+    let records = [];
+    let stats = { present: 0, absent: 0, pending: 0, late: 0, percentage: 0 };
+    if (cadetId) {
+      const historyData = await api.get(`/attendance/cadet/${cadetId}`);
+      records = Array.isArray(historyData) ? historyData : (historyData.records || []);
+      // Calculate stats from records
+      const present = records.filter(r => r.status === 'present').length;
+      const absent = records.filter(r => r.status === 'absent').length;
+      const pending = records.filter(r => r.status === 'pending').length;
+      const late = records.filter(r => r.status === 'late').length;
+      const total = records.length;
+      stats = { present, absent, pending, late, percentage: total > 0 ? Math.round((present / total) * 100) : 0 };
+    }
 
     container.innerHTML = `
       <div class="fade-in">
@@ -113,9 +123,12 @@ async function submitAttendance(e) {
   }
 
   try {
+    const cadet = JSON.parse(localStorage.getItem('ncc_cadet') || '{}');
     await api.post('/attendance', {
+      cadetId: cadet._id,
       date: formData.date,
-      gpsCoordinates: { latitude: parseFloat(formData.latitude), longitude: parseFloat(formData.longitude) },
+      gpsLatitude: parseFloat(formData.latitude),
+      gpsLongitude: parseFloat(formData.longitude),
       remarks: formData.remarks
     });
     showToast('Attendance submitted!', 'success');

@@ -67,6 +67,9 @@ async function handleLogin(e, type) {
     api.setToken(result.token);
     currentUser = result.user;
     currentCadet = result.cadet || null;
+    if (currentCadet) {
+      currentUser.cadetId = currentCadet._id;
+    }
     localStorage.setItem('ncc_user', JSON.stringify(currentUser));
     if (currentCadet) localStorage.setItem('ncc_cadet', JSON.stringify(currentCadet));
 

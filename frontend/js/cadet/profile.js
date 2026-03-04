@@ -5,8 +5,8 @@ async function loadCadetProfile(container) {
   container.innerHTML = '<div class="text-center p-8" style="color:var(--text-blue-200)">Loading profile...</div>';
 
   try {
-    const user = JSON.parse(localStorage.getItem('ncc_user') || '{}');
-    const cadet = await api.get(`/cadets/${user.cadetId}`);
+    const storedCadet = JSON.parse(localStorage.getItem('ncc_cadet') || '{}');
+    const cadet = storedCadet._id ? await api.get(`/cadets/${storedCadet._id}`) : storedCadet;
 
     container.innerHTML = `
       <div class="fade-in">

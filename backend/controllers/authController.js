@@ -5,10 +5,22 @@ const User = require('../models/User');
 const Cadet = require('../models/Cadet');
 const { generateToken } = require('../middleware/auth');
 const { createSupabaseUser, signInWithEmail } = require('../config/supabase');
+const { validationResult } = require('express-validator');
+
+// Helper to check validation errors
+function checkValidation(req, res) {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    res.status(400).json({ error: errors.array()[0].msg });
+    return false;
+  }
+  return true;
+}
 
 // @desc    Register Admin/ANO
 // @route   POST /api/auth/register/admin
 exports.registerAdmin = async (req, res, next) => {
+  if (!checkValidation(req, res)) return;
   try {
     const { fullName, email, password, phone, rank, designation, serviceId, unitAssignment } = req.body;
 
@@ -43,6 +55,7 @@ exports.registerAdmin = async (req, res, next) => {
 // @desc    Register Cadet
 // @route   POST /api/auth/register/cadet
 exports.registerCadet = async (req, res, next) => {
+  if (!checkValidation(req, res)) return;
   try {
     const {
       cadetName, fatherName, motherName, dob, bloodGroup, aadharNumber,
@@ -99,6 +112,7 @@ exports.registerCadet = async (req, res, next) => {
 // @desc    Login User
 // @route   POST /api/auth/login
 exports.login = async (req, res, next) => {
+  if (!checkValidation(req, res)) return;
   try {
     const { email, password } = req.body;
 
