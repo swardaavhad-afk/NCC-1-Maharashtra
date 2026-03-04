@@ -1,0 +1,22 @@
+{
+  "name": "ncc-1-maharashtra",
+  "version": "1.0.0",
+  "description": "NCC 01 MAH AIR SQN Cadet Management System - Full MERN Stack",
+  "main": "backend/server.js",
+  "scripts": {
+    "start": "node backend/server.js",
+    "dev": "cd backend && npx nodemon server.js",
+    "seed": "cd backend && node seed/seedData.js",
+    "install:backend": "cd backend && npm install",
+    "setup": "npm run install:backend"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/swardaavhad-afk/NCC-1-Maharashtra.git"
+  },
+  "author": "NCC 01 MAH AIR SQN",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
