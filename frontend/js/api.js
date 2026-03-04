@@ -4,7 +4,7 @@
 const API_BASE = window.location.origin + '/api';
 
 const api = {
-  token: localStorage.getItem('ncc_token') || null,
+  token: (function() { try { return localStorage.getItem('ncc_token'); } catch(e) { return null; } })(),
 
   setToken(token) {
     this.token = token;
