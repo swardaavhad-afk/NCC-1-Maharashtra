@@ -1,16 +1,29 @@
-// =============================================
-// Study Materials Routes
-// =============================================
-const express = require('express');
+﻿const express = require('express');
 const router = express.Router();
-const { getAllMaterials, createMaterial, updateMaterial, deleteMaterial, incrementDownload, getUploadUrl } = require('../controllers/studyMaterialController');
+const { 
+  getAllMaterials, 
+  createMaterial, 
+  updateMaterial, 
+  deleteMaterial, 
+  incrementDownload 
+} = require('../controllers/studyMaterialController');
 const { protect, adminOnly } = require('../middleware/auth');
+const upload = require('../middleware/upload');
 
 router.use(protect);
 router.get('/', getAllMaterials);
-router.post('/', adminOnly, createMaterial);
-router.post('/upload-url', adminOnly, getUploadUrl);
-router.put('/:id', adminOnly, updateMaterial);
+router.post(
+  '/', 
+  adminOnly, 
+  upload.single('file'), 
+  createMaterial
+);
+router.put(
+  '/:id', 
+  adminOnly, 
+  upload.single('file'), 
+  updateMaterial
+);
 router.delete('/:id', adminOnly, deleteMaterial);
 router.post('/:id/download', incrementDownload);
 

@@ -9,12 +9,10 @@ const morgan = require('morgan');
 const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 const path = require('path');
-const connectDB = require('./config/db');
 
 const app = express();
 
 // ── Connect to MongoDB ──
-connectDB();
 
 // ── Security Middleware ──
 app.use(helmet({
@@ -94,7 +92,7 @@ app.listen(PORT, () => {
 ║   NCC 1 Maharashtra - Server Started             ║
 ║   Port: ${PORT}                                      ║
 ║   Environment: ${(process.env.NODE_ENV || 'development').padEnd(33)}║
-║   MongoDB: Connected                             ║
+║   Supabase: Connected                             ║
 ╚══════════════════════════════════════════════════╝
   `);
 });

@@ -38,7 +38,7 @@ async function loadAdminStudyMaterials(container) {
                     <td>${m.year}</td>
                     <td>${m.downloadCount}</td>
                     <td>
-                      <button class="btn btn-outline btn-sm" onclick="deleteMaterial('${m._id}')">Delete</button>
+                      <button class="btn btn-outline btn-sm" onclick="deleteMaterial('${m.id}')">Delete</button>
                     </td>
                   </tr>
                 `).join('')}

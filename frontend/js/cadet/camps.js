@@ -39,7 +39,7 @@ async function loadCadetCamps(container) {
                   <span class="text-xs" style="color:var(--text-blue-200)">${(c.registeredCadets || []).length}/${c.maxCadets}</span>
                 </div>
                 ${c.status === 'upcoming' && !isRegistered ? `
-                  <button class="btn btn-primary btn-sm btn-block mt-4" onclick="registerForCamp('${c._id}')">Register</button>
+                  <button class="btn btn-primary btn-sm btn-block mt-4" onclick="registerForCamp('${c.id}')">Register</button>
                 ` : isRegistered ? `
                   <div class="badge badge-green mt-4" style="width:100%;text-align:center;padding:0.5rem">Registered</div>
                 ` : ''}

@@ -37,8 +37,8 @@ async function loadAdminAttendance(container) {
                     <td class="text-sm">${r.reviewedBy?.fullName || '-'}</td>
                     <td>
                       ${r.status === 'pending' ? `
-                        <button class="btn btn-sm btn-secondary" onclick="reviewAttendance('${r._id}', 'present')">✓ Approve</button>
-                        <button class="btn btn-sm btn-danger" onclick="reviewAttendance('${r._id}', 'absent')">✕ Reject</button>
+                        <button class="btn btn-sm btn-secondary" onclick="reviewAttendance('${r.id}', 'present')">✓ Approve</button>
+                        <button class="btn btn-sm btn-danger" onclick="reviewAttendance('${r.id}', 'absent')">✕ Reject</button>
                       ` : '—'}
                     </td>
                   </tr>

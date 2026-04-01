@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -20,6 +20,88 @@
     .hero-bg-overlay { position: absolute; inset: 0; background: linear-gradient(135deg, rgba(30,58,138,0.85), rgba(15,23,42,0.85)); }
     .hero-content { position: relative; z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: calc(100vh - 80px); padding: 1rem; }
     .navbar { position: relative; z-index: 20; }
+    /* Landing Page Specific Styles */
+    .landing-page { background: #0a1628; color: #ffffff; overflow-x: hidden; }
+    .landing-navbar { background: linear-gradient(to bottom, rgba(10, 22, 40, 0.95), rgba(10, 22, 40, 0.8)); backdrop-filter: blur(10px); border-bottom: 2px solid #fbbf24; position: sticky; top: 0; z-index: 100; }
+    .landing-navbar-inner { max-width: 1400px; margin: 0 auto; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+    .landing-navbar-brand { display: flex; align-items: center; gap: 1rem; }
+    .landing-navbar-brand img { height: 50px; width: auto; }
+    .landing-navbar-brand-text h1 { font-size: 1.25rem; font-weight: 700; margin: 0; }
+    .landing-navbar-brand-text p { font-size: 0.85rem; color: #fbbf24; margin: 0; }
+    .landing-navbar-links { display: flex; gap: 2rem; }
+    .landing-navbar-links a { color: #ffffff; text-decoration: none; font-weight: 500; transition: color 0.3s; }
+    .landing-navbar-links a:hover { color: #fbbf24; }
+    .landing-hero-section { min-height: 100vh; background: linear-gradient(135deg, rgba(30, 58, 138, 0.9), rgba(15, 23, 42, 0.9)), url('https://images.unsplash.com/photo-1709873581246-2fef2132fc57?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1200'); background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; padding: 2rem; }
+    .landing-hero-content { text-align: center; max-width: 800px; z-index: 10; }
+    .landing-hero-content h1 { font-size: clamp(2.5rem, 8vw, 4rem); font-weight: 800; margin: 0 0 1rem 0; line-height: 1.2; }
+    .landing-hero-content .highlight { color: #fbbf24; }
+    .landing-hero-content p { font-size: 1.25rem; margin: 1rem 0 2rem 0; color: #e0e7ff; }
+    .landing-cta-buttons { display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap; margin: 2rem 0 0 0; }
+    .landing-btn { padding: 0.875rem 2rem; font-size: 1rem; font-weight: 600; border: none; border-radius: 0.5rem; cursor: pointer; transition: all 0.3s; text-decoration: none; display: inline-block; }
+    .landing-btn-primary { background: linear-gradient(135deg, #1e3a8a, #1e40af); color: #fbbf24; }
+    .landing-btn-primary:hover { background: linear-gradient(135deg, #1e40af, #1e3a8a); transform: translateY(-2px); box-shadow: 0 10px 30px rgba(30, 58, 138, 0.4); }
+    .landing-btn-secondary { background: #fbbf24; color: #0a1628; }
+    .landing-btn-secondary:hover { background: #f59e0b; transform: translateY(-2px); box-shadow: 0 10px 30px rgba(251, 191, 36, 0.4); }
+
+    /* Section Styles */
+    .landing-section { padding: 5rem 2rem; max-width: 1400px; margin: 0 auto; }
+    .landing-section-title { font-size: clamp(2rem, 5vw, 2.5rem); font-weight: 800; text-align: center; margin: 0 0 3rem 0; color: #ffffff; }
+    .landing-section-title .accent { color: #fbbf24; }
+    .landing-horizontal-line { width: 100px; height: 4px; background: #fbbf24; margin: 1rem auto 2rem; }
+
+    /* About Section */
+    .about-container { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center; }
+    .about-text h3 { font-size: 1.75rem; color: #fbbf24; margin-top: 0; }
+    .about-text p { font-size: 1rem; line-height: 1.8; color: #cbd5e1; margin-bottom: 1.5rem; }
+    .core-values-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; margin-top: 2rem; }
+    .core-value-card { background: linear-gradient(135deg, rgba(30, 58, 138, 0.5), rgba(15, 23, 42, 0.5)); border: 2px solid #1e40af; border-radius: 0.75rem; padding: 2rem; text-align: center; transition: all 0.3s; }
+    .core-value-card:hover { border-color: #fbbf24; transform: translateY(-5px); box-shadow: 0 15px 40px rgba(251, 191, 36, 0.2); }
+    .core-value-card h4 { color: #fbbf24; font-size: 1.25rem; margin-top: 0; }
+    .core-value-card p { color: #cbd5e1; margin-bottom: 0; }
+
+    /* Gallery Section */
+    .gallery-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 2rem; }
+    .gallery-item { background: rgba(30, 58, 138, 0.3); border-radius: 0.75rem; overflow: hidden; border: 2px solid #1e40af; transition: all 0.3s; cursor: pointer; }
+    .gallery-item:hover { border-color: #fbbf24; transform: scale(1.05); box-shadow: 0 15px 40px rgba(251, 191, 36, 0.2); }
+    .gallery-item-image { width: 100%; height: 200px; background: linear-gradient(135deg, #1e3a8a, #1e40af); display: flex; align-items: center; justify-content: center; font-size: 3rem; overflow: hidden; }
+    .gallery-item-image img { width: 100%; height: 100%; object-fit: cover; }
+    .gallery-item-content { padding: 1.5rem; }
+    .gallery-item-content h4 { color: #fbbf24; margin: 0 0 0.5rem 0; }
+    .gallery-item-content p { color: #cbd5e1; margin: 0; font-size: 0.9rem; }
+
+    /* Activities Section */
+    .activities-wrapper { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+    .activity-card { background: linear-gradient(135deg, rgba(30, 58, 138, 0.5), rgba(15, 23, 42, 0.5)); border: 2px solid #1e40af; border-radius: 0.75rem; padding: 2.5rem; transition: all 0.3s; }
+    .activity-card:hover { border-color: #fbbf24; transform: translateY(-5px); box-shadow: 0 15px 40px rgba(251, 191, 36, 0.2); }
+    .activity-card-title { font-size: 1.5rem; font-weight: 700; color: #fbbf24; margin-top: 0; }
+    .activity-card-icon { font-size: 2.5rem; margin-bottom: 1rem; }
+    .activity-list { list-style: none; padding: 0; margin: 1.5rem 0 0 0; }
+    .activity-list li { padding: 0.75rem 0; color: #cbd5e1; border-bottom: 1px solid rgba(251, 191, 36, 0.2); display: flex; align-items: center; }
+    .activity-list li:last-child { border-bottom: none; }
+    .activity-list li:before { content: "✓"; color: #fbbf24; font-weight: bold; margin-right: 0.75rem; }
+
+    /* Contact Section */
+    .contact-wrapper { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+    .contact-card { background: linear-gradient(135deg, rgba(30, 58, 138, 0.5), rgba(15, 23, 42, 0.5)); border: 2px solid #1e40af; border-radius: 0.75rem; padding: 2.5rem; }
+    .contact-card-title { font-size: 1.5rem; font-weight: 700; color: #fbbf24; margin-top: 0; }
+    .contact-item { margin-bottom: 1.5rem; }
+    .contact-item label { color: #a0aec0; font-size: 0.85rem; font-weight: 600; display: block; margin-bottom: 0.5rem; }
+    .contact-item p { color: #cbd5e1; margin: 0; font-size: 1rem; }
+
+    /* Footer */
+    .landing-footer { background: rgba(30, 58, 138, 0.8); border-top: 2px solid #fbbf24; padding: 2rem; text-align: center; color: #cbd5e1; }
+
+    @media (max-width: 768px) {
+      .landing-navbar-links { display: none; }
+      .about-container { grid-template-columns: 1fr; }
+      .activities-wrapper { grid-template-columns: 1fr; }
+      .contact-wrapper { grid-template-columns: 1fr; }
+      .landing-section { padding: 3rem 1rem; }
+      .landing-hero-content h1 { font-size: 2rem; }
+      .landing-hero-content p { font-size: 1rem; }
+      .landing-cta-buttons { flex-direction: column; }
+      .landing-btn { width: 100%; }
+    }
   </style>
 </head>
 <body>
@@ -43,80 +125,195 @@
   <div id="toast-container" class="toast-container"></div>
 
   <!-- ============================================= -->
-  <!-- LANDING / LOGIN PAGE                          -->
+  <!-- LANDING PAGE - REDESIGNED                     -->
   <!-- ============================================= -->
-  <div id="page-landing" class="hero">
-    <!-- Background -->
-    <div class="hero-bg">
-      <div class="hero-bg-overlay"></div>
-      <img src="https://images.unsplash.com/photo-1709873581246-2fef2132fc57?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080" alt="Indian Air Force" class="hero-bg-image">
-    </div>
-
+  <div id="page-landing" class="landing-page">
     <!-- Navbar -->
-    <nav class="navbar">
-      <div class="navbar-inner">
-        <div class="navbar-brand">
-          <img src="assets/ncc-logo.png" alt="NCC" class="navbar-logo" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/NCC_India_logo.svg/200px-NCC_India_logo.svg.png'">
-          <div>
-            <div class="navbar-title">01 MAH AIR SQN NCC, MUMBAI<br>(NASHIK DETACHMENT)</div>
-            <div class="navbar-subtitle">MUMBAI B GROUP<br>MAHARASHTRA DIRECTORATE</div>
+    <nav class="landing-navbar">
+      <div class="landing-navbar-inner">
+        <div class="landing-navbar-brand">
+          <img src="assets/ncc-logo.png" alt="NCC">
+          <div class="landing-navbar-brand-text">
+            <h1>NCC 01 MAH AIR SQN</h1>
+            <p>Nashik Detachment, Maharashtra</p>
           </div>
         </div>
-        <div class="navbar-links">
-          <a href="#">ABOUT NCC</a>
-          <a href="#">ACTIVITIES</a>
-          <a href="#">GALLERY</a>
-          <a href="#">CONTACT</a>
+        <div class="landing-navbar-links">
+          <a href="#about">ABOUT NCC</a>
+          <a href="#activities">ACTIVITIES</a>
+          <a href="#gallery">GALLERY</a>
+          <a href="#contact">CONTACT</a>
         </div>
       </div>
     </nav>
 
-    <!-- Hero Content -->
-    <div class="hero-content">
-      <div class="text-center mb-8" style="max-width:56rem">
-        <h2 class="hero-heading">
-          UNITY AND<br><span class="gradient-text">DISCIPLINE</span>
-        </h2>
-        <p class="hero-tagline">TOUCH THE SKY WITH GLORY</p>
-        <div class="hero-divider" style="margin:0 auto"></div>
+    <!-- Hero Section -->
+    <section class="landing-hero-section">
+      <div class="landing-hero-content">
+        <h1>UNITY AND <span class="highlight">DISCIPLINE</span></h1>
+        <p>Excellence Through Discipline, Leadership Through Service</p>
+        <div class="landing-cta-buttons">
+          <button class="landing-btn landing-btn-primary" onclick="showLoginForm('admin')">Admin Portal</button>
+          <button class="landing-btn landing-btn-secondary" onclick="showLoginForm('cadet')">Cadet Portal</button>
+        </div>
       </div>
+    </section>
 
-      <!-- Login Cards -->
-      <div class="login-cards">
-        <!-- Admin Card -->
-        <div class="login-card admin" onclick="showLoginForm('admin')">
-          <div class="login-card-accent"></div>
-          <div style="position:relative">
-            <div class="login-card-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    <!-- About NCC Section -->
+    <section class="landing-section" id="about">
+      <h2 class="landing-section-title">About <span class="accent">NCC</span></h2>
+      <div class="landing-horizontal-line"></div>
+      
+      <div class="about-container">
+        <div class="about-text">
+          <h3>Nashik Detachment</h3>
+          <p><strong>Unit:</strong> 01 MAH AIR SQN NCC, MUMBAI (NASHIK DETACHMENT)</p>
+          <p><strong>Group:</strong> MUMBAI B GROUP, MAHARASHTRA DIRECTORATE</p>
+          <p>The National Cadet Corps (NCC) is the world's largest uniformed youth organization. Our mission is to develop character, discipline, leadership, and secular outlook in the youth of India.</p>
+          <p><strong>Commanding Officer:</strong> Dr. Thakur Akash Ashok</p>
+          <p>Under the visionary leadership of Dr. Thakur Akash Ashok, the Nashik Detachment continues to inspire and train cadets to become exemplary citizens with a spirit of service and patriotism.</p>
+        </div>
+        
+        <div>
+          <h3 style="color: #fbbf24; margin-top: 0;">Core Values</h3>
+          <div class="core-values-grid">
+            <div class="core-value-card">
+              <h4>☆ DISCIPLINE</h4>
+              <p>Adherence to code of conduct and regulations</p>
             </div>
-            <h3>ADMIN / ANO</h3>
-            <p>Administrative Officer Portal</p>
-            <div class="login-card-action">
-              <span>ACCESS PORTAL</span>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+            <div class="core-value-card">
+              <h4>☆ UNITY</h4>
+              <p>Strength through collective effort and teamwork</p>
+            </div>
+            <div class="core-value-card">
+              <h4>☆ INTEGRITY</h4>
+              <p>Honesty and moral principles</p>
+            </div>
+            <div class="core-value-card">
+              <h4>☆ LEADERSHIP</h4>
+              <p>Inspiring and guiding others with purpose</p>
+            </div>
+            <div class="core-value-card">
+              <h4>☆ SERVICE</h4>
+              <p>Dedication to community and nation</p>
+            </div>
+            <div class="core-value-card">
+              <h4>☆ EXCELLENCE</h4>
+              <p>Pursuit of highest standards</p>
             </div>
           </div>
         </div>
-        <!-- Cadet Card -->
-        <div class="login-card cadet" onclick="showLoginForm('cadet')">
-          <div class="login-card-accent"></div>
-          <div style="position:relative">
-            <div class="login-card-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-            </div>
-            <h3>CADET</h3>
-            <p>Cadet Management Portal</p>
-            <div class="login-card-action">
-              <span>ACCESS PORTAL</span>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
-            </div>
+      </div>
+    </section>
+
+    <!-- Gallery Section -->
+    <section class="landing-section" id="gallery" style="background: rgba(30, 58, 138, 0.1);">
+      <h2 class="landing-section-title">Achievement <span class="accent">Gallery</span></h2>
+      <div class="landing-horizontal-line"></div>
+      
+      <div id="landing-gallery" class="gallery-container">
+        <!-- Gallery items loaded dynamically from approved achievements -->
+        <div class="gallery-item">
+          <div class="gallery-item-image" style="background: linear-gradient(135deg, #1e3a8a, #fbbf24);">📜</div>
+          <div class="gallery-item-content">
+            <h4>Loading Achievements...</h4>
+            <p>Fetching approved cadet achievements</p>
           </div>
         </div>
       </div>
+    </section>
 
-      <div class="motto"><p>UNITY AND DISCIPLINE</p></div>
-    </div>
+    <!-- Activities Section -->
+    <section class="landing-section" id="activities">
+      <h2 class="landing-section-title">Our <span class="accent">Activities</span></h2>
+      <div class="landing-horizontal-line"></div>
+      
+      <div class="activities-wrapper">
+        <div class="activity-card">
+          <div class="activity-card-icon">🎖️</div>
+          <h3 class="activity-card-title">Regular Activities</h3>
+          <ul class="activity-list">
+            <li>Drill & Parade Training</li>
+            <li>Leadership Development</li>
+            <li>Physical Fitness Programs</li>
+            <li>Classroom Instructions</li>
+            <li>Adventure Activities</li>
+            <li>Community Service</li>
+            <li>Rifle Shooting Practice</li>
+            <li>STEM & Technical Training</li>
+          </ul>
+        </div>
+
+        <div class="activity-card">
+          <div class="activity-card-icon">⛺</div>
+          <h3 class="activity-card-title">Camps</h3>
+          <ul class="activity-list">
+            <li>Summer Training Camps</li>
+            <li>National Integration Camps</li>
+            <li>Pre-RD Camp (Republic Day)</li>
+            <li>Air Force Attachment Camps</li>
+            <li>Naval Attachment Camps</li>
+            <li>Army Attachment Camps</li>
+            <li>Adventure Camps</li>
+            <li>Specialized Courses</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="landing-section" id="contact" style="background: rgba(30, 58, 138, 0.1);">
+      <h2 class="landing-section-title">Get in <span class="accent">Contact</span></h2>
+      <div class="landing-horizontal-line"></div>
+      
+      <div class="contact-wrapper">
+        <div class="contact-card">
+          <h3 class="contact-card-title">📍 College Details</h3>
+          <div class="contact-item">
+            <label>College Name</label>
+            <p>Nashik Detachment College / Institution</p>
+          </div>
+          <div class="contact-item">
+            <label>Location</label>
+            <p>Nashik, Maharashtra, India</p>
+          </div>
+          <div class="contact-item">
+            <label>Email</label>
+            <p>ncc.nashik@college.edu</p>
+          </div>
+          <div class="contact-item">
+            <label>Phone</label>
+            <p>+91 (XXXX) XXX-XXXX</p>
+          </div>
+        </div>
+
+        <div class="contact-card">
+          <h3 class="contact-card-title">⭐ ANO Contact</h3>
+          <div class="contact-item">
+            <label>ANO (Associate NCC Officer)</label>
+            <p>Dr. Thakur Akash Ashok</p>
+          </div>
+          <div class="contact-item">
+            <label>Position</label>
+            <p>Commanding Officer<br>01 MAH AIR SQN NCC</p>
+          </div>
+          <div class="contact-item">
+            <label>Office Email</label>
+            <p>ano.nashik@ncc.mil.in</p>
+          </div>
+          <div class="contact-item">
+            <label>Office Hours</label>
+            <p>Monday - Friday, 9:00 AM - 5:00 PM</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="landing-footer">
+      <p>&copy; 2024-2025 NCC 01 MAH AIR SQN, Nashik Detachment. All rights reserved.</p>
+      <p style="margin-top: 1rem; color: #fbbf24;">Unity and Discipline • Touch the Sky with Glory</p>
+    </footer>
   </div>
 
   <!-- ============================================= -->
@@ -130,7 +327,7 @@
     <nav class="navbar">
       <div class="navbar-inner">
         <div class="navbar-brand">
-          <img src="assets/ncc-logo.png" alt="NCC" class="navbar-logo" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/NCC_India_logo.svg/200px-NCC_India_logo.svg.png'">
+          <img src="assets/ncc-logo.png" alt="NCC" class="navbar-logo">
           <div>
             <div class="navbar-title">01 MAH AIR SQN NCC, MUMBAI<br>(NASHIK DETACHMENT)</div>
             <div class="navbar-subtitle">MUMBAI B GROUP<br>MAHARASHTRA DIRECTORATE</div>
@@ -141,7 +338,7 @@
     <div class="login-form-container">
       <div class="login-form-wrapper">
         <div class="login-form-logo">
-          <img src="assets/ncc-logo.png" alt="NCC" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/NCC_India_logo.svg/200px-NCC_India_logo.svg.png'">
+          <img src="assets/ncc-logo.png" alt="NCC">
         </div>
         <h2 id="login-form-title" class="text-3xl font-bold text-center mb-2">ADMIN PORTAL</h2>
         <p id="login-form-subtitle" class="text-sm text-center mb-6" style="color:var(--text-blue-300)">Administrative Officer Login</p>
@@ -199,7 +396,7 @@
     <nav class="navbar">
       <div class="navbar-inner">
         <div class="navbar-brand">
-          <img src="assets/ncc-logo.png" alt="NCC" class="navbar-logo" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/NCC_India_logo.svg/200px-NCC_India_logo.svg.png'">
+          <img src="assets/ncc-logo.png" alt="NCC" class="navbar-logo">
           <div>
             <div class="navbar-title">01 MAH AIR SQN NCC, MUMBAI<br>(NASHIK DETACHMENT)</div>
             <div class="navbar-subtitle">MUMBAI B GROUP<br>MAHARASHTRA DIRECTORATE</div>
@@ -210,7 +407,7 @@
     <div class="registration-page" style="position:relative;z-index:10">
       <div class="registration-container">
         <div class="registration-header">
-          <img src="assets/ncc-logo.png" alt="NCC" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/NCC_India_logo.svg/200px-NCC_India_logo.svg.png'">
+          <img src="assets/ncc-logo.png" alt="NCC">
           <h1 class="text-4xl font-bold tracking-wide">ADMIN / ANO REGISTRATION</h1>
           <p style="color:var(--text-blue-300)">Administrative Officer Registration Form</p>
         </div>
@@ -301,7 +498,7 @@
     <nav class="navbar">
       <div class="navbar-inner">
         <div class="navbar-brand">
-          <img src="assets/ncc-logo.png" alt="NCC" class="navbar-logo" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/NCC_India_logo.svg/200px-NCC_India_logo.svg.png'">
+          <img src="assets/ncc-logo.png" alt="NCC" class="navbar-logo">
           <div>
             <div class="navbar-title">01 MAH AIR SQN NCC, MUMBAI<br>(NASHIK DETACHMENT)</div>
             <div class="navbar-subtitle">MUMBAI B GROUP<br>MAHARASHTRA DIRECTORATE</div>
@@ -312,7 +509,7 @@
     <div class="registration-page" style="position:relative;z-index:10">
       <div class="registration-container">
         <div class="registration-header">
-          <img src="assets/ncc-logo.png" alt="NCC" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/NCC_India_logo.svg/200px-NCC_India_logo.svg.png'">
+          <img src="assets/ncc-logo.png" alt="NCC">
           <h1 class="text-4xl font-bold tracking-wide">CADET REGISTRATION PORTAL</h1>
           <p style="color:var(--text-blue-300)">Complete Your Enrollment Portfolio</p>
         </div>
@@ -406,7 +603,7 @@
     <aside id="admin-sidebar" class="sidebar">
       <div class="sidebar-inner">
         <div class="sidebar-header">
-          <img src="assets/ncc-logo.png" alt="NCC" class="sidebar-logo" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/NCC_India_logo.svg/200px-NCC_India_logo.svg.png'">
+          <img src="assets/ncc-logo.png" alt="NCC" class="sidebar-logo">
           <div>
             <div class="sidebar-title">ADMIN PORTAL</div>
             <div class="sidebar-subtitle">ANO DASHBOARD</div>
@@ -476,7 +673,7 @@
     <aside id="cadet-sidebar" class="sidebar">
       <div class="sidebar-inner">
         <div class="sidebar-header">
-          <img src="assets/ncc-logo.png" alt="NCC" class="sidebar-logo" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/NCC_India_logo.svg/200px-NCC_India_logo.svg.png'">
+          <img src="assets/ncc-logo.png" alt="NCC" class="sidebar-logo">
           <div>
             <div class="sidebar-title">CADET PORTAL</div>
             <div class="sidebar-subtitle">DASHBOARD</div>
@@ -540,6 +737,47 @@
   <div id="modal-overlay" class="modal-overlay" onclick="if(event.target===this)closeModal()">
     <div class="modal" id="modal-content"></div>
   </div>
+
+  <!-- Gallery Loading Script -->
+  <script>
+    // Load approved achievements into gallery when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+      loadGalleryAchievements();
+    });
+
+    function loadGalleryAchievements() {
+      const gallery = document.getElementById('landing-gallery');
+      if (!gallery) return;
+
+      // Fetch approved achievements from API
+      fetch('/api/achievements?status=approved&limit=6')
+        .then(response => response.json())
+        .then(data => {
+          if (data.achievements && data.achievements.length > 0) {
+            gallery.innerHTML = '';
+            data.achievements.forEach(achievement => {
+              const card = document.createElement('div');
+              card.className = 'gallery-item';
+              card.innerHTML = `
+                <div class="gallery-item-image" style="background: linear-gradient(135deg, #1e3a8a, #fbbf24); overflow: hidden;">
+                  ${achievement.imageUrl ? `<img src="${achievement.imageUrl}" alt="${achievement.title}">` : '🏆'}
+                </div>
+                <div class="gallery-item-content">
+                  <h4>${achievement.title}</h4>
+                  <p>${achievement.description || 'Cadet Achievement'}</p>
+                  <p style="font-size: 0.8rem; color: #a0aec0; margin-top: 0.5rem;">${achievement.date ? new Date(achievement.date).toLocaleDateString() : 'Recent'}</p>
+                </div>
+              `;
+              gallery.appendChild(card);
+            });
+          }
+        })
+        .catch(error => {
+          console.log('Loading default gallery...');
+          // Keep default gallery items if API fails
+        });
+    }
+  </script>
 
   <!-- Scripts -->
   <script src="js/api.js"></script>

@@ -1,7 +1,7 @@
 // =============================================
 // API Client - HTTP Request Helper
 // =============================================
-const API_BASE = window.location.origin + '/api';
+const API_BASE = 'http://localhost:5000/api'; // Set absolute URL for local dev
 
 const api = {
   token: (function() { try { return localStorage.getItem('ncc_token'); } catch(e) { return null; } })(),
@@ -15,23 +15,41 @@ const api = {
     }
   },
 
-  getHeaders() {
-    const headers = { 'Content-Type': 'application/json' };
+  getHeaders(isFormData = false) {
+    const headers = {};
+    if (!isFormData) {
+      headers['Content-Type'] = 'application/json';
+    }
     if (this.token) headers['Authorization'] = `Bearer ${this.token}`;
     return headers;
   },
 
-  async request(method, endpoint, data = null) {
+  async request(method, endpoint, data = null, isFormData = false) {
     const options = {
       method,
-      headers: this.getHeaders(),
+      headers: this.getHeaders(isFormData),
     };
+    
     if (data && method !== 'GET') {
-      options.body = JSON.stringify(data);
+      options.body = isFormData ? data : JSON.stringify(data);
     }
+    
     try {
       const res = await fetch(`${API_BASE}${endpoint}`, options);
-      const json = await res.json();
+        let json = await res.json();
+        const convertKeys = obj => {
+          if (Array.isArray(obj)) return obj.map(convertKeys);
+          if (obj !== null && typeof obj === 'object') {
+            let newObj = {};
+            for (const k in obj) {
+              const camelKey = k.replace(/_([a-z])/g, g => g[1].toUpperCase());
+              newObj[camelKey] = convertKeys(obj[k]);
+            }
+            return newObj;
+          }
+          return obj;
+        };
+        json = convertKeys(json);
       if (!res.ok) {
         throw new Error(json.error || 'Request failed');
       }
@@ -51,9 +69,12 @@ const api = {
   post(endpoint, data) { return this.request('POST', endpoint, data); },
   put(endpoint, data) { return this.request('PUT', endpoint, data); },
   delete(endpoint) { return this.request('DELETE', endpoint); },
+  
+  postFormData(endpoint, formData) { return this.request('POST', endpoint, formData, true); },
+  putFormData(endpoint, formData) { return this.request('PUT', endpoint, formData, true); },
 };
 
-// ── Toast Notifications ──
+// ... Toast Notifications ...
 function showToast(message, type = 'info') {
   const container = document.getElementById('toast-container');
   const toast = document.createElement('div');
@@ -67,7 +88,7 @@ function showToast(message, type = 'info') {
   }, 3000);
 }
 
-// ── Modal Helpers ──
+// ... Modal Helpers ...
 function openModal(html) {
   document.getElementById('modal-content').innerHTML = html;
   document.getElementById('modal-overlay').classList.add('active');
@@ -77,7 +98,6 @@ function closeModal() {
   document.getElementById('modal-overlay').classList.remove('active');
 }
 
-// ── Date Formatting ──
 function formatDate(dateStr) {
   if (!dateStr) return 'N/A';
   return new Date(dateStr).toLocaleDateString('en-IN', {
@@ -93,7 +113,6 @@ function formatDateTime(dateStr) {
   });
 }
 
-// ── Form Data Helper ──
 function getFormData(form) {
   const formData = new FormData(form);
   const data = {};
@@ -102,3 +121,11 @@ function getFormData(form) {
   }
   return data;
 }
+
+window.api = api;
+window.showToast = showToast;
+window.openModal = openModal;
+window.closeModal = closeModal;
+window.formatDate = formatDate;
+window.formatDateTime = formatDateTime;
+window.getFormData = getFormData;

@@ -35,8 +35,8 @@ async function loadAdminCadets(container) {
                     <td class="text-sm">${c.collegeName}</td>
                     <td><span class="badge badge-${c.status === 'active' ? 'green' : 'red'}">${c.status}</span></td>
                     <td>
-                      <button class="btn btn-outline btn-sm" onclick="viewCadetProfile('${c._id}')">View</button>
-                      <button class="btn btn-danger btn-sm" onclick="deleteCadet('${c._id}')">Delete</button>
+                      <button class="btn btn-outline btn-sm" onclick="viewCadetProfile('${c.id}')">View</button>
+                      <button class="btn btn-danger btn-sm" onclick="deleteCadet('${c.id}')">Delete</button>
                     </td>
                   </tr>
                 `).join('')}

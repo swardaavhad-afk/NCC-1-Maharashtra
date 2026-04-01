@@ -39,7 +39,7 @@ async function loadAdminCamps(container) {
                 <span class="text-xs" style="color:var(--text-blue-200)">${(c.registeredCadets || []).length}/${c.maxCadets} cadets</span>
               </div>
               <div style="margin-top:1rem;display:flex;gap:0.5rem">
-                <button class="btn btn-outline btn-sm" onclick="deleteCampItem('${c._id}')">Delete</button>
+                <button class="btn btn-outline btn-sm" onclick="deleteCampItem('${c.id}')">Delete</button>
               </div>
             </div>
           `).join('')}

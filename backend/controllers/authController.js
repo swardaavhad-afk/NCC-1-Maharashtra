@@ -1,10 +1,9 @@
 // =============================================
-// Auth Controller
+// Auth Controller - Supabase Postgres
 // =============================================
-const User = require('../models/User');
-const Cadet = require('../models/Cadet');
+const bcrypt = require('bcryptjs');
+const { supabaseAdmin, createSupabaseUser } = require('../config/supabase');
 const { generateToken } = require('../middleware/auth');
-const { createSupabaseUser, signInWithEmail } = require('../config/supabase');
 const { validationResult } = require('express-validator');
 
 // Helper to check validation errors
@@ -17,6 +16,23 @@ function checkValidation(req, res) {
   return true;
 }
 
+// Helper to hash password
+async function hashPassword(password) {
+  const salt = await bcrypt.genSalt(12);
+  return bcrypt.hash(password, salt);
+}
+
+// Helper to verify password
+async function verifyPassword(candidatePassword, hashedPassword) {
+  return bcrypt.compare(candidatePassword, hashedPassword);
+}
+
+// Helper to exclude password from user object
+function sanitizeUser(user) {
+  const { password, ...userWithoutPassword } = user;
+  return userWithoutPassword;
+}
+
 // @desc    Register Admin/ANO
 // @route   POST /api/auth/register/admin
 exports.registerAdmin = async (req, res, next) => {
@@ -25,28 +41,56 @@ exports.registerAdmin = async (req, res, next) => {
     const { fullName, email, password, phone, rank, designation, serviceId, unitAssignment } = req.body;
 
     // Check if user exists
-    const existingUser = await User.findOne({ email });
+    const { data: existingUser } = await supabaseAdmin
+      .from('users')
+      .select('*')
+      .eq('email', email)
+      .single();
+
     if (existingUser) {
       return res.status(400).json({ error: 'Email already registered' });
     }
 
-    // Create user in MongoDB
-    const user = await User.create({
-      fullName, email, password, phone, role: 'admin',
-      rank, designation, serviceId, unitAssignment
-    });
+    // Hash password
+    const hashedPassword = await hashPassword(password);
 
-    // Try to create in Supabase (non-blocking)
-    try {
-      const supaUser = await createSupabaseUser(email, password, { fullName, role: 'admin' });
-      user.supabaseUserId = supaUser.user.id;
-      await user.save();
-    } catch (e) {
-      console.log('Supabase user creation skipped:', e.message);
+    // Create user in Postgres
+    const { data: user, error: userError } = await supabaseAdmin
+      .from('users')
+      .insert([{
+        full_name: fullName,
+        email,
+        password: hashedPassword,
+        phone,
+        role: 'admin',
+        rank,
+        designation,
+        service_id: serviceId,
+        unit_assignment: unitAssignment,
+        is_active: true,
+      }])
+      .select()
+      .single();
+
+    if (userError) {
+      return res.status(400).json({ error: userError.message });
     }
 
-    const token = generateToken(user._id, user.role);
-    res.status(201).json({ token, user: user.toJSON() });
+    // Try to create in Supabase Auth (non-blocking)
+    try {
+      const supaUser = await createSupabaseUser(email, password, { fullName, role: 'admin' });
+      if (supaUser?.user?.id) {
+        await supabaseAdmin
+          .from('users')
+          .update({ supabase_user_id: supaUser.user.id })
+          .eq('id', user.id);
+      }
+    } catch (e) {
+      console.log('Supabase Auth user creation skipped:', e.message);
+    }
+
+    const token = generateToken(user.id, user.role);
+    res.status(201).json({ token, user: sanitizeUser(user) });
   } catch (error) {
     next(error);
   }
@@ -66,82 +110,150 @@ exports.registerCadet = async (req, res, next) => {
       email, password
     } = req.body;
 
-    // Check if user exists
-    const existingUser = await User.findOne({ email });
+    // Check if email exists
+    const { data: existingUser } = await supabaseAdmin
+      .from('users')
+      .select('*')
+      .eq('email', email)
+      .single();
+
     if (existingUser) {
       return res.status(400).json({ error: 'Email already registered' });
     }
 
     // Check if enrollment number exists
-    const existingCadet = await Cadet.findOne({ enrollmentNumber });
+    const { data: existingCadet } = await supabaseAdmin
+      .from('cadets')
+      .select('*')
+      .eq('enrollment_number', enrollmentNumber)
+      .single();
+
     if (existingCadet) {
       return res.status(400).json({ error: 'Enrollment number already registered' });
     }
 
-    // Create user account
-    const user = await User.create({
-      fullName: cadetName, email, password, phone: cadetMobile, role: 'cadet'
-    });
+    // Hash password
+    const hashedPassword = await hashPassword(password);
 
-    // Create cadet profile
-    const cadet = await Cadet.create({
-      userId: user._id,
-      cadetName, fatherName, motherName, dob, bloodGroup, aadharNumber,
-      cadetMobile, fatherMobile, motherMobile,
-      enrollmentNumber, sdSw, year, enrolledCourse, collegeName, university,
-      residentialAddress, pincode, nearbyRailwayStation,
-      bankName, accountNumber, ifscCode, micrCode
-    });
+    // Create user in Postgres
+    const { data: user, error: userError } = await supabaseAdmin
+      .from('users')
+      .insert([{
+        full_name: cadetName,
+        email,
+        password: hashedPassword,
+        phone: cadetMobile,
+        role: 'cadet',
+        is_active: true,
+      }])
+      .select()
+      .single();
 
-    // Try to create in Supabase (non-blocking)
-    try {
-      const supaUser = await createSupabaseUser(email, password, { fullName: cadetName, role: 'cadet' });
-      user.supabaseUserId = supaUser.user.id;
-      await user.save();
-    } catch (e) {
-      console.log('Supabase user creation skipped:', e.message);
+    if (userError) {
+      return res.status(400).json({ error: userError.message });
     }
 
-    const token = generateToken(user._id, user.role);
-    res.status(201).json({ token, user: user.toJSON(), cadet });
+    // Create cadet profile
+    const { data: cadet, error: cadetError } = await supabaseAdmin
+      .from('cadets')
+      .insert([{
+        user_id: user.id,
+        cadet_name: cadetName,
+        father_name: fatherName,
+        mother_name: motherName,
+        dob,
+        blood_group: bloodGroup,
+        aadhar_number: aadharNumber,
+        cadet_mobile: cadetMobile,
+        father_mobile: fatherMobile,
+        mother_mobile: motherMobile,
+        enrollment_number: enrollmentNumber,
+        sd_sw: sdSw,
+        year,
+        enrolled_course: enrolledCourse,
+        college_name: collegeName,
+        university,
+        residential_address: residentialAddress,
+        pincode,
+        nearby_railway_station: nearbyRailwayStation,
+        bank_name: bankName,
+        account_number: accountNumber,
+        ifsc_code: ifscCode,
+        micr_code: micrCode,
+      }])
+      .select()
+      .single();
+
+    if (cadetError) {
+      return res.status(400).json({ error: cadetError.message });
+    }
+
+    // Try to create in Supabase Auth (non-blocking)
+    try {
+      const supaUser = await createSupabaseUser(email, password, { fullName: cadetName, role: 'cadet' });
+      if (supaUser?.user?.id) {
+        await supabaseAdmin
+          .from('users')
+          .update({ supabase_user_id: supaUser.user.id })
+          .eq('id', user.id);
+      }
+    } catch (e) {
+      console.log('Supabase Auth user creation skipped:', e.message);
+    }
+
+    const token = generateToken(user.id, user.role);
+    res.status(201).json({ token, user: sanitizeUser(user), cadet });
   } catch (error) {
     next(error);
   }
 };
 
-// @desc    Login User
+// @desc    Login User by Email
 // @route   POST /api/auth/login
 exports.login = async (req, res, next) => {
   if (!checkValidation(req, res)) return;
   try {
     const { email, password } = req.body;
 
-    const user = await User.findOne({ email });
+    const { data: user, error } = await supabaseAdmin
+      .from('users')
+      .select('*')
+      .eq('email', email)
+      .single();
+
     if (!user) {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
 
-    const isMatch = await user.comparePassword(password);
+    // Verify password
+    const isMatch = await verifyPassword(password, user.password);
     if (!isMatch) {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
 
-    if (!user.isActive) {
+    if (!user.is_active) {
       return res.status(403).json({ error: 'Account is deactivated' });
     }
 
     // Update last login
-    user.lastLogin = new Date();
-    await user.save();
+    await supabaseAdmin
+      .from('users')
+      .update({ last_login: new Date() })
+      .eq('id', user.id);
 
     // If cadet, get cadet profile
     let cadetProfile = null;
     if (user.role === 'cadet') {
-      cadetProfile = await Cadet.findOne({ userId: user._id });
+      const { data: cadet } = await supabaseAdmin
+        .from('cadets')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+      cadetProfile = cadet;
     }
 
-    const token = generateToken(user._id, user.role);
-    res.json({ token, user: user.toJSON(), cadet: cadetProfile });
+    const token = generateToken(user.id, user.role);
+    res.json({ token, user: sanitizeUser(user), cadet: cadetProfile });
   } catch (error) {
     next(error);
   }
@@ -153,26 +265,42 @@ exports.loginByEnrollment = async (req, res, next) => {
   try {
     const { enrollmentNumber, password } = req.body;
 
-    const cadet = await Cadet.findOne({ enrollmentNumber });
+    // Get cadet by enrollment number
+    const { data: cadet, error: cadetError } = await supabaseAdmin
+      .from('cadets')
+      .select('*')
+      .eq('enrollment_number', enrollmentNumber)
+      .single();
+
     if (!cadet) {
       return res.status(401).json({ error: 'Invalid enrollment number' });
     }
 
-    const user = await User.findById(cadet.userId);
+    // Get user
+    const { data: user, error: userError } = await supabaseAdmin
+      .from('users')
+      .select('*')
+      .eq('id', cadet.user_id)
+      .single();
+
     if (!user) {
       return res.status(401).json({ error: 'User account not found' });
     }
 
-    const isMatch = await user.comparePassword(password);
+    // Verify password
+    const isMatch = await verifyPassword(password, user.password);
     if (!isMatch) {
       return res.status(401).json({ error: 'Invalid password' });
     }
 
-    user.lastLogin = new Date();
-    await user.save();
+    // Update last login
+    await supabaseAdmin
+      .from('users')
+      .update({ last_login: new Date() })
+      .eq('id', user.id);
 
-    const token = generateToken(user._id, user.role);
-    res.json({ token, user: user.toJSON(), cadet });
+    const token = generateToken(user.id, user.role);
+    res.json({ token, user: sanitizeUser(user), cadet });
   } catch (error) {
     next(error);
   }
@@ -182,13 +310,32 @@ exports.loginByEnrollment = async (req, res, next) => {
 // @route   GET /api/auth/me
 exports.getMe = async (req, res, next) => {
   try {
-    const user = await User.findById(req.user._id);
+    // req.user is set by the protect middleware
+    const userId = req.user.id;
+
+    const { data: user, error: userError } = await supabaseAdmin
+      .from('users')
+      .select('*')
+      .eq('id', userId)
+      .single();
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
     let cadetProfile = null;
     if (user.role === 'cadet') {
-      cadetProfile = await Cadet.findOne({ userId: user._id });
+      const { data: cadet } = await supabaseAdmin
+        .from('cadets')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+      cadetProfile = cadet;
     }
-    res.json({ user: user.toJSON(), cadet: cadetProfile });
+
+    res.json({ user: sanitizeUser(user), cadet: cadetProfile });
   } catch (error) {
     next(error);
   }
 };
+

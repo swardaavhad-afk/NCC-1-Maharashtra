@@ -1,98 +1,93 @@
 // =============================================
 // Cadet Controller
 // =============================================
-const Cadet = require('../models/Cadet');
-const User = require('../models/User');
+const { supabaseAdmin } = require('../config/supabase');
 
-// @desc    Get all cadets (admin)
-// @route   GET /api/cadets
 exports.getAllCadets = async (req, res, next) => {
   try {
     const { search, year, status, page = 1, limit = 20 } = req.query;
-    const query = {};
+    const offset = (page - 1) * limit;
+
+    let query = supabaseAdmin
+      .from('cadets')
+      .select('*, users:user_id(full_name, email, phone, last_login)', { count: 'exact' });
 
     if (search) {
-      query.$text = { $search: search };
+      query = query.or(`cadet_name.ilike.%${search}%,enrollment_number.ilike.%${search}%,college_name.ilike.%${search}%`);
     }
-    if (year) query.year = year;
-    if (status) query.status = status;
+    if (year) query = query.eq('year', year);
+    if (status) query = query.eq('status', status);
 
-    const cadets = await Cadet.find(query)
-      .populate('userId', 'fullName email phone lastLogin')
-      .sort({ createdAt: -1 })
-      .skip((page - 1) * limit)
-      .limit(parseInt(limit));
+    query = query.order('created_at', { ascending: false }).range(offset, offset + limit - 1);
 
-    const total = await Cadet.countDocuments(query);
+    const { data: cadets, count, error } = await query;
+    if (error) return res.status(400).json({ error: error.message });
 
-    res.json({ cadets, total, page: parseInt(page), pages: Math.ceil(total / limit) });
+    const pages = Math.ceil((count || 0) / limit);
+    res.json({ cadets, total: count || 0, page: parseInt(page), pages });
   } catch (error) {
     next(error);
   }
 };
 
-// @desc    Get single cadet
-// @route   GET /api/cadets/:id
 exports.getCadet = async (req, res, next) => {
   try {
-    const cadet = await Cadet.findById(req.params.id)
-      .populate('userId', 'fullName email phone lastLogin');
-    if (!cadet) {
-      return res.status(404).json({ error: 'Cadet not found' });
-    }
+    const { data: cadet, error } = await supabaseAdmin
+      .from('cadets')
+      .select('*, users:user_id(*)')
+      .eq('id', req.params.id)
+      .single();
+
+    if (error || !cadet) return res.status(404).json({ error: 'Cadet not found' });
     res.json(cadet);
   } catch (error) {
     next(error);
   }
 };
 
-// @desc    Update cadet profile
-// @route   PUT /api/cadets/:id
 exports.updateCadet = async (req, res, next) => {
   try {
-    const cadet = await Cadet.findByIdAndUpdate(req.params.id, req.body, {
-      new: true, runValidators: true
-    });
-    if (!cadet) {
-      return res.status(404).json({ error: 'Cadet not found' });
-    }
+    const { data: cadet, error } = await supabaseAdmin
+      .from('cadets')
+      .update(req.body)
+      .eq('id', req.params.id)
+      .select('*, users:user_id(*)')
+      .single();
+
+    if (error || !cadet) return res.status(404).json({ error: 'Cadet not found' });
     res.json(cadet);
   } catch (error) {
     next(error);
   }
 };
 
-// @desc    Delete cadet
-// @route   DELETE /api/cadets/:id
 exports.deleteCadet = async (req, res, next) => {
   try {
-    const cadet = await Cadet.findById(req.params.id);
-    if (!cadet) {
-      return res.status(404).json({ error: 'Cadet not found' });
-    }
-    // Deactivate associated user
-    await User.findByIdAndUpdate(cadet.userId, { isActive: false });
-    await Cadet.findByIdAndDelete(req.params.id);
+    const { data: cadet, error } = await supabaseAdmin.from('cadets').select('user_id').eq('id', req.params.id).single();
+    if (error || !cadet) return res.status(404).json({ error: 'Cadet not found' });
+    await supabaseAdmin.from('users').update({ is_active: false }).eq('id', cadet.user_id);
+    await supabaseAdmin.from('cadets').delete().eq('id', req.params.id);
     res.json({ message: 'Cadet removed successfully' });
   } catch (error) {
     next(error);
   }
 };
 
-// @desc    Get cadet stats
-// @route   GET /api/cadets/stats/overview
 exports.getCadetStats = async (req, res, next) => {
   try {
-    const total = await Cadet.countDocuments();
-    const active = await Cadet.countDocuments({ status: 'active' });
-    const byYear = await Cadet.aggregate([
-      { $group: { _id: '$year', count: { $sum: 1 } } }
-    ]);
-    const byDivision = await Cadet.aggregate([
-      { $group: { _id: '$sdSw', count: { $sum: 1 } } }
-    ]);
+    const { count: total, error: e1 } = await supabaseAdmin.from('cadets').select('*', { count: 'exact', head: true });
+    const { count: active, error: e2 } = await supabaseAdmin.from('cadets').select('*', { count: 'exact', head: true }).eq('status', 'active');
+    const { data: byYear, error: e3 } = await supabaseAdmin.from('cadets').select('year');
+    const { data: byDivision, error: e4 } = await supabaseAdmin.from('cadets').select('sd_sw');
+    
+    if (e1 || e2 || e3 || e4) return res.status(400).json({ error: 'Failed to fetch stats' });
 
-    res.json({ total, active, byYear, byDivision });
+    res.json({
+      total: total || 0,
+      active: active || 0,
+      byYear: byYear ? byYear.reduce((acc, curr) => { const existing = acc.find(item => item._id === curr.year); if (existing) existing.count += 1; else acc.push({ _id: curr.year, count: 1 }); return acc; }, []) : [],
+      byDivision: byDivision ? byDivision.reduce((acc, curr) => { const existing = acc.find(item => item._id === curr.sd_sw); if (existing) existing.count += 1; else acc.push({ _id: curr.sd_sw, count: 1 }); return acc; }, []) : []
+    });
   } catch (error) {
     next(error);
   }

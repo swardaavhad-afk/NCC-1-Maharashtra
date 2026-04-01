@@ -38,7 +38,7 @@ async function loadAdminReports(container) {
             <div class="card-header"><h3 class="card-title" style="color:var(--text-yellow-400)">Cadets by Year</h3></div>
             ${data.cadetsByYear.map(y => `
               <div style="display:flex;justify-content:space-between;padding:0.5rem 0;border-bottom:1px solid var(--border-color)">
-                <span>${y._id}</span>
+                <span>${y.id}</span>
                 <span class="font-bold">${y.count}</span>
               </div>
             `).join('')}
@@ -49,7 +49,7 @@ async function loadAdminReports(container) {
             <div class="card-header"><h3 class="card-title" style="color:var(--text-yellow-400)">Top Colleges</h3></div>
             ${data.cadetsByCollege.map(c => `
               <div style="display:flex;justify-content:space-between;padding:0.5rem 0;border-bottom:1px solid var(--border-color)">
-                <span class="text-sm">${c._id}</span>
+                <span class="text-sm">${c.id}</span>
                 <span class="font-bold">${c.count}</span>
               </div>
             `).join('')}
@@ -60,7 +60,7 @@ async function loadAdminReports(container) {
             <div class="card-header"><h3 class="card-title" style="color:var(--text-yellow-400)">Attendance Overview</h3></div>
             ${data.attendanceStats.map(s => `
               <div style="display:flex;justify-content:space-between;padding:0.5rem 0;border-bottom:1px solid var(--border-color)">
-                <span class="badge badge-${s._id === 'present' ? 'green' : s._id === 'absent' ? 'red' : s._id === 'pending' ? 'yellow' : 'purple'}">${s._id}</span>
+                <span class="badge badge-${s.id === 'present' ? 'green' : s.id === 'absent' ? 'red' : s.id === 'pending' ? 'yellow' : 'purple'}">${s.id}</span>
                 <span class="font-bold">${s.count}</span>
               </div>
             `).join('')}

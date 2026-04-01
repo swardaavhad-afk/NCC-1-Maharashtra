@@ -7,7 +7,7 @@ async function loadCadetAttendance(container) {
   try {
     const user = JSON.parse(localStorage.getItem('ncc_user') || '{}');
     const cadet = JSON.parse(localStorage.getItem('ncc_cadet') || '{}');
-    const cadetId = cadet._id;
+    const cadetId = cadet.id;
     let records = [];
     let stats = { present: 0, absent: 0, pending: 0, late: 0, percentage: 0 };
     if (cadetId) {
@@ -36,11 +36,25 @@ async function loadCadetAttendance(container) {
               <div class="form-group">
                 <label class="form-label">GPS Location</label>
                 <div style="display:flex;gap:0.5rem">
-                  <input type="text" id="gps-coords" class="form-control" placeholder="Click Capture" readonly>
-                  <button type="button" class="btn btn-outline" onclick="captureGPS()">📍 Capture</button>
+                  <input type="text" id="gps-coords" class="form-control" placeholder="Autofilled on Capture" readonly>
                 </div>
                 <input type="hidden" name="latitude" id="gps-lat">
                 <input type="hidden" name="longitude" id="gps-lng">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Photo Identity (Camera)</label>
+                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                  <video id="camera-stream" autoplay playsinline style="width: 100%; border-radius: 8px; border: 1px solid var(--border-light); background: #000; align-self: center; display: none;"></video>
+                  <canvas id="camera-canvas" style="display: none;"></canvas>
+                  <img id="photo-preview" src="" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-light); display: none;"/>
+                  
+                  <div style="display:flex; gap: 0.5rem;">
+                    <button type="button" class="btn btn-outline flex-1" id="start-camera-btn" onclick="startCamera()">📷 Open Camera</button>
+                    <button type="button" class="btn btn-primary flex-1" id="capture-photo-btn" onclick="capturePhoto()" style="display: none;">📸 Capture Photo & GPS</button>
+                    <button type="button" class="btn btn-outline" id="retake-photo-btn" onclick="retakePhoto()" style="display: none;">🔄 Retake</button>
+                  </div>
+                </div>
+                <input type="hidden" name="photoDataUrl" id="photo-data">
               </div>
               <div class="form-group">
                 <label class="form-label">Remarks</label>
@@ -125,15 +139,99 @@ async function submitAttendance(e) {
   try {
     const cadet = JSON.parse(localStorage.getItem('ncc_cadet') || '{}');
     await api.post('/attendance', {
-      cadetId: cadet._id,
+      cadetId: cadet.id,
       date: formData.date,
       gpsLatitude: parseFloat(formData.latitude),
       gpsLongitude: parseFloat(formData.longitude),
-      remarks: formData.remarks
+      remarks: formData.remarks,
+      photo: formData.photoDataUrl
     });
     showToast('Attendance submitted!', 'success');
+    
+    // Stop camera if still running
+    stopCamera();
+    
     loadCadetAttendance(document.getElementById('cadet-content'));
   } catch (err) {
     showToast(err.message, 'error');
   }
 }
+
+// Camera Globals
+let cameraStream = null;
+
+async function startCamera() {
+  const video = document.getElementById('camera-stream');
+  const startBtn = document.getElementById('start-camera-btn');
+  const captureBtn = document.getElementById('capture-photo-btn');
+  const preview = document.getElementById('photo-preview');
+  const retakeBtn = document.getElementById('retake-photo-btn');
+
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'environment' }, // Prefer back camera on mobile
+      audio: false
+    });
+    
+    cameraStream = stream;
+    video.srcObject = stream;
+    video.style.display = 'block';
+    startBtn.style.display = 'none';
+    captureBtn.style.display = 'flex';
+    preview.style.display = 'none';
+    retakeBtn.style.display = 'none';
+    
+    // reset hidden photo input
+    document.getElementById('photo-data').value = "";
+  } catch (err) {
+    console.error("Camera error:", err);
+    showToast('Could not access camera. Please allow permissions.', 'error');
+  }
+}
+
+async function capturePhoto() {
+  const video = document.getElementById('camera-stream');
+  const canvas = document.getElementById('camera-canvas');
+  const preview = document.getElementById('photo-preview');
+  const captureBtn = document.getElementById('capture-photo-btn');
+  const retakeBtn = document.getElementById('retake-photo-btn');
+  
+  if (!cameraStream) return;
+
+  // Automatically start fetching GPS location when capturing the photo!
+  captureGPS();
+
+  // Set canvas scale and draw from video
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+  // Convert to DataURL (JPEG works best for forms)
+  const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+  
+  // Save to hidden form input for submission
+  document.getElementById('photo-data').value = dataUrl;
+  
+  // Update UI Elements
+  preview.src = dataUrl;
+  preview.style.display = 'block';
+  video.style.display = 'none';
+  captureBtn.style.display = 'none';
+  retakeBtn.style.display = 'inline-block';
+  
+  // Stop video track temporarily to save power
+  stopCamera();
+}
+
+function retakePhoto() {
+  startCamera();
+}
+
+function stopCamera() {
+  if (cameraStream) {
+    cameraStream.getTracks().forEach(track => track.stop());
+    cameraStream = null;
+  }
+}
+

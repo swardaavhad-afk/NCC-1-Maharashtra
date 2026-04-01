@@ -68,7 +68,7 @@ async function handleLogin(e, type) {
     currentUser = result.user;
     currentCadet = result.cadet || null;
     if (currentCadet) {
-      currentUser.cadetId = currentCadet._id;
+      currentUser.cadetId = currentCadet.id;
     }
     localStorage.setItem('ncc_user', JSON.stringify(currentUser));
     if (currentCadet) localStorage.setItem('ncc_cadet', JSON.stringify(currentCadet));

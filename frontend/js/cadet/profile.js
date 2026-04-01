@@ -6,7 +6,7 @@ async function loadCadetProfile(container) {
 
   try {
     const storedCadet = JSON.parse(localStorage.getItem('ncc_cadet') || '{}');
-    const cadet = storedCadet._id ? await api.get(`/cadets/${storedCadet._id}`) : storedCadet;
+    const cadet = storedCadet.id ? await api.get(`/cadets/${storedCadet.id}`) : storedCadet;
 
     container.innerHTML = `
       <div class="fade-in">

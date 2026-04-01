@@ -1,134 +1,149 @@
 // =============================================
 // Admin Achievements Management
 // =============================================
+
 async function loadAdminAchievements(container) {
-  container.innerHTML = '<div class="text-center p-8" style="color:var(--text-blue-200)">Loading achievements...</div>';
-
+  container.innerHTML = '<div class=\"text-center p-8\" style=\"color:var(--text-blue-200)\">Loading achievements...</div>';
   try {
-    const [achData, statsData] = await Promise.all([
-      api.get('/achievements'),
-      api.get('/achievements/stats')
-    ]);
-    const { achievements } = achData;
-    const { total, byCategory } = statsData;
-
-    const categoryColors = {
-      'Best Cadet': 'yellow', 'Firing': 'red', 'Drill': 'blue',
-      'Sports': 'green', 'Social Service': 'purple', 'Camp': 'blue',
-      'Academic': 'yellow', 'Other': 'blue'
-    };
+    const response = await api.get('/achievements/admin/all');
+    const achievements = response.achievements || [];
 
     container.innerHTML = `
-      <div class="fade-in">
-        <div class="stats-grid" style="margin-bottom:1.5rem">
-          <div class="stat-card">
-            <div class="stat-card-value">${total}</div>
-            <div class="stat-card-label">Total Achievements</div>
-          </div>
-          ${byCategory.slice(0, 3).map(c => `
-            <div class="stat-card">
-              <div class="stat-card-value">${c.count}</div>
-              <div class="stat-card-label">${c._id}</div>
-            </div>
-          `).join('')}
+      <div class=\"fade-in\">
+        <div style=\"display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem\">
+          <h3 class=\"font-bold text-lg\">Achievement Requests</h3>
+          <button class=\"btn btn-primary\" onclick=\"showAddAchievementModal()\">+ Add Achievement</button>
         </div>
-
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
-          <h3 class="font-bold text-lg">All Achievements</h3>
-          <button class="btn btn-primary" onclick="showAddAchievementModal()">+ Add Achievement</button>
-        </div>
-
-        <div id="achievements-list">
-          ${achievements.map(a => `
-            <div class="achievement-item">
-              <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div style=\"display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:1.5rem\">
+          ${achievements.length === 0 ?
+            '<div class=\"text-center p-8\" style=\"color:var(--text-blue-300);grid-column:1/-1\">No achievements yet</div>'
+            : achievements.map(a => `
+            <div class=\"card\" style=\"padding:1.5rem;border-left:4px solid ${a.is_approved ? '#10b981' : '#f59e0b'}\">
+              <div style=\"display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1rem\">  
                 <div>
-                  <div class="achievement-category" style="color:var(--text-${categoryColors[a.category] || 'blue'}-400)">${a.category}</div>
-                  <div class="font-bold text-lg mb-2">${a.title}</div>
-                  <div class="text-sm" style="color:var(--text-blue-200)">${a.description || ''}</div>
-                  <div class="text-xs mt-2" style="color:var(--text-blue-300)">
-                    ${a.cadetId?.cadetName || 'Unknown'} • ${formatDate(a.dateAwarded)} • <span class="badge badge-blue">${a.level}</span>
-                  </div>
+                  <div class=\"font-bold text-lg\">${a.rank || ''} ${a.name || 'Anonymous'}</div>
+                  <div style=\"color:var(--text-blue-200);font-size:0.875rem\">${a.title || 'Untitled'}</div>
                 </div>
-                <button class="btn btn-danger btn-sm" onclick="deleteAchievement('${a._id}')">Delete</button>
+                ${!a.is_approved ? '<span class=\"badge\" style=\"background-color:#f59e0b;color:#000\">Pending</span>' : '<span class=\"badge\" style=\"background-color:#10b981;color:#fff\">Approved</span>'}
+              </div>
+              <div style=\"margin-bottom:1rem;border-top:1px solid var(--border-color);padding-top:1rem\">
+                <div style=\"font-size:0.875rem;color:var(--text-blue-300);margin-bottom:0.5rem\">
+                  <strong>Camp:</strong> ${a.camp_name || 'N/A'}
+                </div>
+                <div style=\"font-size:0.875rem;color:var(--text-blue-300);margin-bottom:0.5rem\">
+                  <strong>College:</strong> ${a.college_name || 'N/A'}
+                </div>
+                <div style=\"font-size:0.875rem;color:var(--text-blue-300)\">
+                  ${a.is_special ? '<span class=\"badge\" style=\"background-color:#8b5cf6;color:#fff;margin-right:0.5rem\">Special</span>' : ''}
+                  Created: ${formatDate(a.created_at)}
+                </div>
+              </div>
+              <div style=\"display:flex;gap:0.5rem;justify-content:flex-end\">
+                ${!a.is_approved ? `<button class=\"btn btn-primary btn-sm\" onclick=\"approveAchievement(''${a.id}'')\">Approve</button>` : ''}
+                <button class=\"btn btn-sm\" style=\"background:var(--card-bg)\" onclick=\"deleteAchievement(''${a.id}'')\">Delete</button>
               </div>
             </div>
-          `).join('')}
+            `).join('')}
         </div>
       </div>
     `;
   } catch (err) {
-    container.innerHTML = `<div class="card text-center p-8"><p style="color:var(--text-red-400)">Error: ${err.message}</p></div>`;
+    container.innerHTML = `<div class=\"text-error p-4\">Error loading achievements: ${err.message}</div>`;
   }
 }
 
-async function showAddAchievementModal() {
-  let cadets = [];
-  try {
-    const data = await api.get('/cadets');
-    cadets = data.cadets;
-  } catch (e) {}
-
+function showAddAchievementModal() {
   openModal(`
-    <div class="modal-header">
-      <h2 class="modal-title">Add Achievement</h2>
-      <button class="modal-close" onclick="closeModal()">✕</button>
-    </div>
-    <form onsubmit="createAchievement(event)">
-      <div class="form-group">
-        <label class="form-label">Cadet *</label>
-        <select name="cadetId" class="form-control" required>
-          <option value="">Select Cadet</option>
-          ${cadets.map(c => `<option value="${c._id}">${c.cadetName} (${c.enrollmentNumber})</option>`).join('')}
-        </select>
+    <h3 class=\"text-xl font-bold mb-4\">Add Achievement</h3>
+    <form id=\"add-achievement-form\" onsubmit=\"createAchievement(event)\">
+      <div style=\"display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem\">
+        <input type=\"text\" name=\"title\" class=\"input\" placeholder=\"Title*\" required>
+        <input type=\"text\" name=\"name\" class=\"input\" placeholder=\"Cadet Name*\" required>
+        <input type=\"text\" name=\"rank\" class=\"input\" placeholder=\"Rank*\" required>
+        <input type=\"text\" name=\"collegeName\" class=\"input\" placeholder=\"College Name*\" required>
+        <input type=\"text\" name=\"campName\" class=\"input\" placeholder=\"Camp Name\">
+        <input type=\"date\" name=\"date\" class=\"input\" title=\"Achievement Date\">
       </div>
-      <div class="form-group"><label class="form-label">Title *</label><input type="text" name="title" class="form-control" required></div>
-      <div class="grid grid-2">
-        <div class="form-group">
-          <label class="form-label">Category *</label>
-          <select name="category" class="form-control" required>
-            <option value="Academic">Academic</option><option value="Sports">Sports</option>
-            <option value="Camp">Camp</option><option value="Social Service">Social Service</option>
-            <option value="Best Cadet">Best Cadet</option><option value="Firing">Firing</option>
-            <option value="Drill">Drill</option><option value="Other">Other</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Level</label>
-          <select name="level" class="form-control">
-            <option value="Unit">Unit</option><option value="Group">Group</option>
-            <option value="Directorate">Directorate</option><option value="National">National</option>
-            <option value="International">International</option>
-          </select>
-        </div>
+      <textarea name=\"description\" class=\"input\" placeholder=\"Description\" style=\"width:100%;margin-bottom:1rem;min-height:80px\"></textarea>
+      
+      <div style=\"margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;\">
+        <input type=\"checkbox\" name=\"isSpecial\" id=\"isSpecial\" value=\"true\">
+        <label for=\"isSpecial\" style=\"color:var(--text-blue-100)\">Flag as Special Achievement (Gallery)</label>
       </div>
-      <div class="form-group"><label class="form-label">Date Awarded *</label><input type="date" name="dateAwarded" class="form-control" required></div>
-      <div class="form-group"><label class="form-label">Awarded By</label><input type="text" name="awardedBy" class="form-control"></div>
-      <div class="form-group"><label class="form-label">Description</label><textarea name="description" class="form-control"></textarea></div>
-      <button type="submit" class="btn btn-primary btn-block">Add Achievement</button>
+
+      <div style=\"margin-bottom: 1.5rem;\">
+        <label style=\"display:block;margin-bottom:0.5rem;color:var(--text-blue-100)\">Camp/Achievement Photos</label>
+        <input type=\"file\" name=\"campPhotos\" class=\"input\" accept=\"image/*\" multiple>
+      </div>
+
+      <div style=\"display:flex;justify-content:flex-end;gap:1rem\">
+        <button type=\"button\" class=\"btn\" style=\"background:var(--card-bg)\" onclick=\"closeModal()\">Cancel</button>
+        <button type=\"submit\" class=\"btn btn-primary\">Save Achievement</button>
+      </div>
     </form>
   `);
 }
 
 async function createAchievement(e) {
   e.preventDefault();
+  const form = e.target;
+  const formData = new FormData(form);
+  
+  if (formData.get('isSpecial') === 'true') {
+    formData.set('isSpecial', 'true');
+  } else {
+    formData.set('isSpecial', 'false');
+  }
+
+  const submitBtn = form.querySelector('button[type=\"submit\"]');
+  const ogText = submitBtn.textContent;
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Saving...';
+
   try {
-    await api.post('/achievements', getFormData(e.target));
+    await api.postFormData('/achievements', formData);
+    showToast('Achievement added and approved', 'success');
     closeModal();
-    showToast('Achievement added!', 'success');
+    loadAdminAchievements(document.getElementById('admin-content'));
+  } catch (err) {
+    showToast(err.message, 'error');
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = ogText;
+  }
+}
+
+async function approveAchievement(id) {
+  if(!confirm('Approve this achievement for gallery?')) return;
+  try {
+    await api.request('PATCH', '/achievements/' + id + '/approve');
+    showToast('Achievement approved', 'success');
+    loadAdminAchievements(document.getElementById('admin-content'));
+  } catch(err) {
+    try {
+        await api.put('/achievements/' + id, { isApproved: true });
+        showToast('Achievement approved via PUT', 'success');
+        loadAdminAchievements(document.getElementById('admin-content'));
+    } catch(err2) {
+        showToast(err.message, 'error');
+    }
+  }
+}
+
+async function deleteAchievement(id) {
+  if(!confirm('Delete this achievement forever?')) return;
+  try {
+    await api.delete('/achievements/' + id);
+    showToast('Deleted achievement', 'info');
     loadAdminAchievements(document.getElementById('admin-content'));
   } catch (err) {
     showToast(err.message, 'error');
   }
 }
 
-async function deleteAchievement(id) {
-  if (!confirm('Delete this achievement?')) return;
-  try {
-    await api.delete(`/achievements/${id}`);
-    showToast('Achievement deleted', 'success');
-    loadAdminAchievements(document.getElementById('admin-content'));
-  } catch (err) {
-    showToast(err.message, 'error');
-  }
-}
+window.loadAdminAchievements = loadAdminAchievements;
+window.showAddAchievementModal = showAddAchievementModal;
+window.createAchievement = createAchievement;
+window.approveAchievement = approveAchievement;
+window.deleteAchievement = deleteAchievement;
+

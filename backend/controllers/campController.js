@@ -1,25 +1,33 @@
 // =============================================
 // Camp Controller
 // =============================================
-const Camp = require('../models/Camp');
+const { supabaseAdmin } = require('../config/supabase');
 
 // @desc    Get all camps
 // @route   GET /api/camps
 exports.getAllCamps = async (req, res, next) => {
   try {
     const { type, status, page = 1, limit = 20 } = req.query;
-    const query = {};
-    if (type) query.type = type;
-    if (status) query.status = status;
+    const pageNum = parseInt(page);
+    const pageLimit = parseInt(limit);
+    const offset = (pageNum - 1) * pageLimit;
 
-    const camps = await Camp.find(query)
-      .populate('createdBy', 'fullName')
-      .sort({ startDate: -1 })
-      .skip((page - 1) * limit)
-      .limit(parseInt(limit));
+    let query = supabaseAdmin.from('camps').select('*, users(full_name)', { count: 'exact' });
 
-    const total = await Camp.countDocuments(query);
-    res.json({ camps, total, page: parseInt(page), pages: Math.ceil(total / limit) });
+    if (type) query = query.eq('type', type);
+    if (status) query = query.eq('status', status);
+
+    const { data: camps, count } = await query.order('start_date', { ascending: false })
+      .range(offset, offset + pageLimit - 1);
+
+    if (!camps) return res.status(500).json({ error: 'Failed to fetch camps' });
+
+    res.json({
+      camps,
+      total: count,
+      page: pageNum,
+      pages: Math.ceil(count / pageLimit)
+    });
   } catch (error) {
     next(error);
   }
@@ -29,10 +37,13 @@ exports.getAllCamps = async (req, res, next) => {
 // @route   GET /api/camps/:id
 exports.getCamp = async (req, res, next) => {
   try {
-    const camp = await Camp.findById(req.params.id)
-      .populate('createdBy', 'fullName')
-      .populate('registeredCadets', 'cadetName enrollmentNumber');
-    if (!camp) return res.status(404).json({ error: 'Camp not found' });
+    const { data: camp, error } = await supabaseAdmin
+      .from('camps')
+      .select('*, users(full_name), camp_cadets(cadets(cadet_name, enrollment_number))')
+      .eq('id', req.params.id)
+      .single();
+
+    if (error || !camp) return res.status(404).json({ error: 'Camp not found' });
     res.json(camp);
   } catch (error) {
     next(error);
@@ -43,8 +54,13 @@ exports.getCamp = async (req, res, next) => {
 // @route   POST /api/camps
 exports.createCamp = async (req, res, next) => {
   try {
-    req.body.createdBy = req.user._id;
-    const camp = await Camp.create(req.body);
+    const { data: camp, error } = await supabaseAdmin
+      .from('camps')
+      .insert([{ ...req.body, created_by: req.user.id }])
+      .select()
+      .single();
+
+    if (error) return res.status(400).json({ error: error.message });
     res.status(201).json(camp);
   } catch (error) {
     next(error);
@@ -55,10 +71,14 @@ exports.createCamp = async (req, res, next) => {
 // @route   PUT /api/camps/:id
 exports.updateCamp = async (req, res, next) => {
   try {
-    const camp = await Camp.findByIdAndUpdate(req.params.id, req.body, {
-      new: true, runValidators: true
-    });
-    if (!camp) return res.status(404).json({ error: 'Camp not found' });
+    const { data: camp, error } = await supabaseAdmin
+      .from('camps')
+      .update(req.body)
+      .eq('id', req.params.id)
+      .select()
+      .single();
+
+    if (error || !camp) return res.status(404).json({ error: 'Camp not found' });
     res.json(camp);
   } catch (error) {
     next(error);
@@ -69,8 +89,14 @@ exports.updateCamp = async (req, res, next) => {
 // @route   DELETE /api/camps/:id
 exports.deleteCamp = async (req, res, next) => {
   try {
-    const camp = await Camp.findByIdAndDelete(req.params.id);
-    if (!camp) return res.status(404).json({ error: 'Camp not found' });
+    const { data: camp, error } = await supabaseAdmin
+      .from('camps')
+      .delete()
+      .eq('id', req.params.id)
+      .select()
+      .single();
+
+    if (error || !camp) return res.status(404).json({ error: 'Camp not found' });
     res.json({ message: 'Camp deleted successfully' });
   } catch (error) {
     next(error);
@@ -81,20 +107,46 @@ exports.deleteCamp = async (req, res, next) => {
 // @route   POST /api/camps/:id/register
 exports.registerForCamp = async (req, res, next) => {
   try {
-    const camp = await Camp.findById(req.params.id);
-    if (!camp) return res.status(404).json({ error: 'Camp not found' });
-
     const { cadetId } = req.body;
-    if (camp.registeredCadets.includes(cadetId)) {
-      return res.status(400).json({ error: 'Cadet already registered' });
-    }
-    if (camp.registeredCadets.length >= camp.maxCadets) {
+
+    // Check if camp exists and get max cadets
+    const { data: camp, error: campError } = await supabaseAdmin
+      .from('camps')
+      .select('id, max_cadets')
+      .eq('id', req.params.id)
+      .single();
+
+    if (campError || !camp) return res.status(404).json({ error: 'Camp not found' });
+
+    // Check if cadet already registered
+    const { data: existing } = await supabaseAdmin
+      .from('camp_cadets')
+      .select('id')
+      .eq('camp_id', req.params.id)
+      .eq('cadet_id', cadetId)
+      .single();
+
+    if (existing) return res.status(400).json({ error: 'Cadet already registered' });
+
+    // Check camp capacity
+    const { count } = await supabaseAdmin
+      .from('camp_cadets')
+      .select('*', { count: 'exact' })
+      .eq('camp_id', req.params.id);
+
+    if (count >= camp.max_cadets) {
       return res.status(400).json({ error: 'Camp is full' });
     }
 
-    camp.registeredCadets.push(cadetId);
-    await camp.save();
-    res.json(camp);
+    // Register cadet
+    const { data: registration, error } = await supabaseAdmin
+      .from('camp_cadets')
+      .insert([{ camp_id: req.params.id, cadet_id: cadetId }])
+      .select()
+      .single();
+
+    if (error) return res.status(400).json({ error: error.message });
+    res.json(registration);
   } catch (error) {
     next(error);
   }
