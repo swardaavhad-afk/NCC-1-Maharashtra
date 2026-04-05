@@ -4,20 +4,28 @@
     {
       "src": "backend/server.js",
       "use": "@vercel/node"
+    },
+    {
+      "src": "frontend/**",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "backend/server.js"
+      "dest": "/backend/server.js"
     },
     {
-      "src": "/(.*\\.(html|css|js|png|jpg|svg|ico))",
-      "dest": "frontend/$1"
+      "src": "/(assets|css|js)/(.*)",
+      "dest": "/frontend/$1/$2"
+    },
+    {
+      "src": "/(.*\\.html)",
+      "dest": "/frontend/$1"
     },
     {
       "src": "/(.*)",
-      "dest": "frontend/index.html"
+      "dest": "/frontend/index.html"
     }
   ]
 }
