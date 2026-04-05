@@ -90,8 +90,26 @@ exports.createAchievement = async (req, res, next) => {
   try {
     const { title, description, dateAwarded, category, level, rank, name, campName, collegeName, is_special } = req.body;
     const files = req.files || {};
-    const cadetId = req.user.id;
+    const userId = req.user.id;
     const userRole = req.user.role || 'cadet';
+
+    let cadetId = req.body.cadetId;
+
+    // Resolve cadetId if submitted by a cadet
+    if (!cadetId && userRole === 'cadet') {
+      const { data: cadet, error: cadetErr } = await supabaseAdmin
+        .from('cadets')
+        .select('id')
+        .eq('user_id', userId)
+        .single();
+      
+      if (cadetErr || !cadet) {
+        return res.status(404).json({ error: 'Cadet profile not found for this user. Please complete your profile first.' });
+      }
+      cadetId = cadet.id;
+    } else if (!cadetId) {
+      return res.status(400).json({ error: 'cadetId is required for submitting an achievement' });
+    }
 
     // Validate required fields
     if (!title || !category || !dateAwarded) {
