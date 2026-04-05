@@ -1,7 +1,10 @@
 // =============================================
 // API Client - HTTP Request Helper
 // =============================================
-const API_BASE = 'http://localhost:5000/api'; // Set absolute URL for local dev
+// Use localhost for local development, and relative /api for production (Vercel)
+const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+  ? 'http://localhost:5000/api' 
+  : '/api';
 
 const api = {
   token: (function() { try { return localStorage.getItem('ncc_token'); } catch(e) { return null; } })(),
