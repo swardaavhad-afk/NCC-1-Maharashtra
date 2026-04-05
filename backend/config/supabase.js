@@ -3,9 +3,9 @@
 // =============================================
 const { createClient } = require('@supabase/supabase-js');
 
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
+const supabaseUrl = process.env.SUPABASE_URL || "https://lmsnsieavwcosjbjtliz.supabase.co";
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxtc25zaWVhdndjb3NqYmp0bGl6Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NTA2NDU2OSwiZXhwIjoyMDkwNjQwNTY5fQ.2ylG8v1m4tusXyzQodb5roTDA0ZlPgqxM_w4ZDr9CdI";
+const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxtc25zaWVhdndjb3NqYmp0bGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwNjQ1NjksImV4cCI6MjA5MDY0MDU2OX0.QtUtEunWso8mz76i0nKBbWfl4tL2NXgx3pBmsJdVKus";
 
 // Server-side client with service role (full access)
 const supabaseAdmin = supabaseUrl && supabaseServiceKey

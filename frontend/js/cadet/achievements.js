@@ -258,7 +258,7 @@ async function showSubmitAchievementModal() {
           accept=".pdf,.jpg,.jpeg,.png"
           required
         >
-        <small style="color:var(--text-blue-300)">PDF, JPG, or PNG (max 5MB)</small>
+        <small style="color:var(--text-blue-300)">PDF, JPG, or PNG (max 4MB)</small>
       </div>
 
       <div class="form-group">
@@ -270,7 +270,7 @@ async function showSubmitAchievementModal() {
           accept=".jpg,.jpeg,.png"
           multiple
         >
-        <small style="color:var(--text-blue-300)">JPG or PNG (multiple files allowed, max 5MB each)</small>
+        <small style="color:var(--text-blue-300)">JPG or PNG (multiple files allowed, max 4MB each)</small>
       </div>
 
       <div style="display:flex;gap:1rem;margin-top:2rem">

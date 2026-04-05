@@ -30,7 +30,7 @@ app.use('/api/', limiter);
 
 // ── CORS ──
 const corsOptions = {
-  origin: process.env.FRONTEND_URL || '*',
+  origin: process.env.FRONTEND_URL || true, // true echoes the origin
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
@@ -85,16 +85,18 @@ app.get('*', (req, res) => {
 app.use(require('./middleware/errorHandler'));
 
 // ── Start Server ──
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`
+if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => {
+    console.log(`
 ╔══════════════════════════════════════════════════╗
 ║   NCC 1 Maharashtra - Server Started             ║
 ║   Port: ${PORT}                                      ║
 ║   Environment: ${(process.env.NODE_ENV || 'development').padEnd(33)}║
 ║   Supabase: Connected                             ║
 ╚══════════════════════════════════════════════════╝
-  `);
-});
+    `);
+  });
+}
 
 module.exports = app;
