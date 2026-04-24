@@ -26,7 +26,12 @@ exports.getAllMaterials = async (req, res, next) => {
     if (!materials) return res.status(500).json({ error: 'Failed to fetch materials' });
 
     res.json({
-      materials,
+      materials: materials.map(m => ({
+        ...m,
+        fileUrl: m.file_url || m.drive_link,
+        fileName: m.file_name,
+        downloadCount: m.download_count
+      })),
       total: count,
       page: pageNum,
       pages: Math.ceil(count / pageLimit)

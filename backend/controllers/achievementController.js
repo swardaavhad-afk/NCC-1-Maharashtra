@@ -78,7 +78,13 @@ exports.getCadetAchievements = async (req, res, next) => {
 
     if (error) return res.status(500).json({ error: error.message });
 
-    res.json(achievements || []);
+    const formattedAchievements = achievements ? achievements.map(a => ({
+      ...a,
+      isApproved: a.is_approved,
+      isSpecial: a.is_special
+    })) : [];
+
+    res.json(formattedAchievements);
   } catch (error) {
     next(error);
   }
@@ -156,6 +162,11 @@ exports.createAchievement = async (req, res, next) => {
       cadet_id: cadetId,
       is_approved: isApproved,
       is_special: isSpecialValue,
+      name: name || '',
+      rank: rank || '',
+      camp_name: campName || '',
+      college_name: collegeName || '',
+      camp_photos: campPhotosUrls,
       created_at: new Date().toISOString()
     };
 

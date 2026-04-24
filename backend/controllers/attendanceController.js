@@ -27,7 +27,15 @@ exports.getAllAttendance = async (req, res, next) => {
     if (!records) return res.status(500).json({ error: 'Failed to fetch records' });
 
     res.json({
-      records,
+      records: records.map(r => ({
+        ...r,
+        cadetId: r.cadets ? {
+          cadetName: r.cadets.cadet_name,
+          enrollmentNumber: r.cadets.enrollment_number
+        } : null,
+        reviewedBy: r.users ? { fullName: r.users.full_name } : null,
+        gpsVerified: r.gps_verified
+      })),
       total: count,
       page: pageNum,
       pages: Math.ceil(count / pageLimit)
@@ -136,13 +144,13 @@ exports.getCadetAttendance = async (req, res, next) => {
   try {
     const { data: records, error } = await supabaseAdmin
       .from('attendance')
-      .select('*')
+      .select('*, users(full_name)')
       .eq('cadet_id', req.params.cadetId)
       .order('date', { ascending: false })
       .limit(100);
 
     if (error) return res.status(500).json({ error: error.message });
-    res.json(records || []);
+    res.json(records ? records.map(r => ({ ...r, gpsVerified: r.gps_verified, reviewedBy: r.users ? { fullName: r.users.full_name } : null })) : []);
   } catch (error) {
     next(error);
   }

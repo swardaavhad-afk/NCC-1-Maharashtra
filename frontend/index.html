@@ -750,7 +750,7 @@
       if (!gallery) return;
 
       // Fetch approved achievements from API
-      fetch('/api/achievements?status=approved&limit=6')
+      fetch('/api/achievements/gallery?limit=6')
         .then(response => response.json())
         .then(data => {
           if (data.achievements && data.achievements.length > 0) {
@@ -760,12 +760,12 @@
               card.className = 'gallery-item';
               card.innerHTML = `
                 <div class="gallery-item-image" style="background: linear-gradient(135deg, #1e3a8a, #fbbf24); overflow: hidden;">
-                  ${achievement.imageUrl ? `<img src="${achievement.imageUrl}" alt="${achievement.title}">` : '🏆'}
+                  ${(achievement.camp_photos && achievement.camp_photos[0]) ? `<img src="${achievement.camp_photos[0]}" alt="${achievement.title}">` : (achievement.certificate_url ? `<img src="${achievement.certificate_url}" alt="${achievement.title}">` : '🏆')}
                 </div>
                 <div class="gallery-item-content">
                   <h4>${achievement.title}</h4>
                   <p>${achievement.description || 'Cadet Achievement'}</p>
-                  <p style="font-size: 0.8rem; color: #a0aec0; margin-top: 0.5rem;">${achievement.date ? new Date(achievement.date).toLocaleDateString() : 'Recent'}</p>
+                  <p style="font-size: 0.8rem; color: #a0aec0; margin-top: 0.5rem;">${achievement.date_awarded ? new Date(achievement.date_awarded).toLocaleDateString() : 'Recent'}</p>
                 </div>
               `;
               gallery.appendChild(card);

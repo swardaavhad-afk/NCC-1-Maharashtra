@@ -23,8 +23,16 @@ exports.getAllCadets = async (req, res, next) => {
     const { data: cadets, count, error } = await query;
     if (error) return res.status(400).json({ error: error.message });
 
+    const formattedCadets = cadets.map(c => ({
+      ...c,
+      cadetName: c.cadet_name,
+      enrollmentNumber: c.enrollment_number,
+      sdSw: c.sd_sw,
+      collegeName: c.college_name
+    }));
+
     const pages = Math.ceil((count || 0) / limit);
-    res.json({ cadets, total: count || 0, page: parseInt(page), pages });
+    res.json({ cadets: formattedCadets, total: count || 0, page: parseInt(page), pages });
   } catch (error) {
     next(error);
   }

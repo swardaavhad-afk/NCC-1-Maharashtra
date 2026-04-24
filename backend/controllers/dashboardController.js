@@ -37,7 +37,10 @@ exports.adminDashboard = async (req, res, next) => {
       .select('*, cadets(cadet_name, enrollment_number)')
       .order('created_at', { ascending: false })
       .limit(5);
-
+      const formattedAttendance = recentAttendance ? recentAttendance.map(a => ({
+        ...a,
+        cadetId: a.cadets ? { cadetName: a.cadets.cadet_name, enrollmentNumber: a.cadets.enrollment_number } : null
+      })) : [];
     const { data: upcomingCampsList } = await supabaseAdmin
       .from('camps')
       .select('*')
@@ -51,6 +54,11 @@ exports.adminDashboard = async (req, res, next) => {
       .order('created_at', { ascending: false })
       .limit(5);
 
+    const formattedAchievements = recentAchievements ? recentAchievements.map(a => ({
+      ...a,
+      cadetId: a.cadets ? { cadetName: a.cadets.cadet_name } : null
+    })) : [];
+
     res.json({
       stats: {
         totalCadets,
@@ -59,9 +67,9 @@ exports.adminDashboard = async (req, res, next) => {
         pendingAttendance,
         totalAchievements
       },
-      recentAttendance,
+      recentAttendance: formattedAttendance,
       upcomingCampsList,
-      recentAchievements
+      recentAchievements: formattedAchievements
     });
   } catch (error) {
     next(error);
